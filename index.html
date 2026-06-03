@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stadsvriend – Huurachterstand</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: #F4F4F2;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+  .phone {
+    background: #E8E8E6;
+    border: 1px solid #C8C8C4;
+    border-radius: 14px;
+    padding: 14px;
+    width: 100%;
+    max-width: 390px;
+  }
+  .screen {
+    background: #FFFFFF;
+    border: 1px solid #DDDDDA;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .topbar {
+    background: #1F3864;
+    padding: 13px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .topbar-title { font-size: 13px; font-weight: 600; color: #FFFFFF; }
+  .topbar-icon { font-size: 18px; color: #85B7EB; }
+  .lang-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 10px 12px;
+    background: #F4F4F2;
+    border-bottom: 1px solid #E0E0DC;
+  }
+  .lang-btn {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 8px;
+    border: 1px solid #C8C8C4;
+    background: #FFFFFF;
+    color: #5F5E5A;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    font-family: inherit;
+  }
+  .lang-btn.active { background: #1F3864; color: #FFFFFF; border-color: #1F3864; }
+  .content { padding: 14px 14px 22px; }
+  .hero {
+    background: #E1F5EE;
+    border: 1px solid #5DCAA5;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+  }
+  .hero-title { font-size: 15px; font-weight: 600; color: #085041; margin-bottom: 4px; }
+  .hero-sub { font-size: 12px; color: #0F6E56; line-height: 1.55; }
+  .section-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #888780;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+    margin-top: 14px;
+  }
+  .fase-mini {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 11px;
+    border-radius: 8px;
+    border: 1px solid #E0E0DC;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background: #FFFFFF;
+    transition: background 0.15s;
+  }
+  .fase-mini:hover { background: #F4F4F2; }
+  .fase-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .fase-text { flex: 1; }
+  .fase-mini-title { font-size: 13px; font-weight: 600; color: #2C2C2A; }
+  .fase-mini-tag { font-size: 11px; color: #888780; margin-top: 1px; }
+  .fase-arrow { font-size: 16px; color: #B4B2A9; transition: transform 0.2s; }
+  .fase-arrow.open { transform: rotate(90deg); }
+  .detail-panel {
+    display: none;
+    background: #F4F4F2;
+    border: 1px solid #E0E0DC;
+    border-radius: 8px;
+    padding: 13px 14px;
+    margin-bottom: 8px;
+    margin-top: -2px;
+  }
+  .detail-panel.open { display: block; }
+  .detail-title { font-size: 14px; font-weight: 600; color: #2C2C2A; margin-bottom: 7px; }
+  .detail-body { font-size: 12px; color: #5F5E5A; line-height: 1.65; margin-bottom: 10px; }
+  .detail-recht {
+    font-size: 11px;
+    color: #085041;
+    background: #E1F5EE;
+    border: 1px solid #5DCAA5;
+    border-radius: 7px;
+    padding: 7px 10px;
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+  .detail-actie {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: none;
+    width: 100%;
+    cursor: pointer;
+    color: #FFFFFF;
+    font-family: inherit;
+    transition: opacity 0.15s;
+  }
+  .detail-actie:hover { opacity: 0.88; }
+  .detail-actie.green { background: #1D9E75; }
+  .detail-actie.amber { background: #BA7517; }
+  .detail-actie.red   { background: #A32D2D; }
+  .rechten-box {
+    border: 1px solid #E0E0DC;
+    border-radius: 8px;
+    padding: 12px 13px;
+    margin-top: 14px;
+    background: #FFFFFF;
+  }
+  .rechten-box-title { font-size: 13px; font-weight: 600; color: #2C2C2A; margin-bottom: 8px; }
+  .recht-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 7px;
+    font-size: 12px;
+    color: #5F5E5A;
+    line-height: 1.55;
+  }
+  .recht-item:last-child { margin-bottom: 0; }
+  .recht-dot { width: 7px; height: 7px; border-radius: 50%; background: #1D9E75; flex-shrink: 0; margin-top: 4px; }
+  .wetten {
+    font-size: 10px;
+    color: #B4B2A9;
+    margin-top: 10px;
+    text-align: center;
+    line-height: 1.6;
+  }
+  .contact-strip {
+    background: #0C447C;
+    border-radius: 8px;
+    padding: 13px 14px;
+    margin-top: 14px;
+  }
+  .contact-strip-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: #B5D4F4;
+    margin-bottom: 9px;
+    text-align: center;
+  }
+  .contact-row { display: flex; gap: 7px; }
+  .contact-pill {
+    flex: 1;
+    background: #185FA5;
+    border-radius: 7px;
+    padding: 9px 10px;
+    text-align: center;
+  }
+  .contact-pill .cn { font-size: 11px; color: #B5D4F4; margin-bottom: 3px; }
+  .contact-pill .nr { font-size: 13px; font-weight: 700; color: #FFFFFF; margin-bottom: 2px; }
+  .gratis {
+    display: inline-block;
+    background: #1D9E75;
+    color: #FFFFFF;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 5px;
+    border-radius: 8px;
+    margin-left: 3px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <div class="screen">
+
+    <div class="topbar">
+      <span class="topbar-title">Stadsvriend – Huurachterstand</span>
+      <span class="topbar-icon">⌂</span>
+    </div>
+
+    <div class="lang-row">
+      <button class="lang-btn active" onclick="setLang('nl',this)">NL</button>
+      <button class="lang-btn" onclick="setLang('en',this)">EN</button>
+      <button class="lang-btn" onclick="setLang('ar',this)">AR</button>
+      <button class="lang-btn" onclick="setLang('tr',this)">TR</button>
+      <button class="lang-btn" onclick="setLang('fr',this)">FR</button>
+      <button class="lang-btn" onclick="setLang('de',this)">DE</button>
+      <button class="lang-btn" onclick="setLang('es',this)">ES</button>
+      <button class="lang-btn" onclick="setLang('zh',this)">中文</button>
+    </div>
+
+    <div class="content">
+
+      <div class="hero">
+        <div class="hero-title" id="hero-title">U heeft de noodkaart gescand</div>
+        <div class="hero-sub" id="hero-sub">Hieronder vindt u uitleg per fase, uw rechten en de hulp die beschikbaar is. Tik op een fase voor meer informatie.</div>
+      </div>
+
+      <div class="section-label" id="label-fases">Kies uw situatie</div>
+
+      <div id="fases-list">
+        <div class="fase-mini" onclick="toggleFase(0)">
+          <div class="fase-dot" style="background:#1D9E75"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f0-title">1 maand niet betaald</div>
+            <div class="fase-mini-tag" id="f0-tag">Eerste herinnering</div>
+          </div>
+          <div class="fase-arrow" id="a0">›</div>
+        </div>
+        <div class="detail-panel" id="d0">
+          <div class="detail-title" id="d0-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d0-body">U heeft één maand huur niet betaald. U ontvangt een herinnering van Stadsvriend. Er zijn nog geen juridische gevolgen. Dit is het beste moment om contact op te nemen.</div>
+          <div class="detail-recht" id="d0-recht">✓ U heeft het recht om een betalingsregeling aan te vragen.</div>
+          <button class="detail-actie green" id="d0-btn" onclick="window.open('tel:020-0000000')">Bel Stadsvriend: 020 – 000 00 00</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(1)">
+          <div class="fase-dot" style="background:#1D9E75"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f1-title">2 maanden niet betaald</div>
+            <div class="fase-mini-tag" id="f1-tag">Gemeente wordt ingelicht</div>
+          </div>
+          <div class="fase-arrow" id="a1">›</div>
+        </div>
+        <div class="detail-panel" id="d1">
+          <div class="detail-title" id="d1-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d1-body">Stadsvriend is wettelijk verplicht uw situatie te melden bij de gemeente Amsterdam. De gemeente zal contact met u opnemen om gratis hulp aan te bieden. Neem de telefoon op.</div>
+          <div class="detail-recht" id="d1-recht">✓ U heeft het recht op gratis schuldhulpverlening via de gemeente.</div>
+          <button class="detail-actie green" id="d1-btn" onclick="window.open('tel:020-2554555')">Bel Schuldhulp Amsterdam: 020 – 255 45 55</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(2)">
+          <div class="fase-dot" style="background:#BA7517"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f2-title">Aanmaning ontvangen</div>
+            <div class="fase-mini-tag" id="f2-tag">Officiële brief met deadline</div>
+          </div>
+          <div class="fase-arrow" id="a2">›</div>
+        </div>
+        <div class="detail-panel" id="d2">
+          <div class="detail-title" id="d2-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d2-body">U heeft een formele aanmaning ontvangen met een uiterste betaaldatum. Als u voor die datum niet betaalt of contact opneemt, kunnen verdere stappen worden gezet. Handel nu – er is nog tijd.</div>
+          <div class="detail-recht" id="d2-recht">✓ U heeft het recht om te reageren en een betalingsregeling voor te stellen.</div>
+          <button class="detail-actie amber" id="d2-btn" onclick="window.open('tel:020-0000000')">Bel Stadsvriend: 020 – 000 00 00</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(3)">
+          <div class="fase-dot" style="background:#BA7517"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f3-title">Officieel in verzuim</div>
+            <div class="fase-mini-tag" id="f3-tag">Schuld groeit – extra kosten mogelijk</div>
+          </div>
+          <div class="fase-arrow" id="a3">›</div>
+        </div>
+        <div class="detail-panel" id="d3">
+          <div class="detail-title" id="d3-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d3-body">U bent officieel te laat met betalen. Er kunnen nu extra kosten bij uw schuld komen. Hoe langer u wacht, hoe hoger het totaalbedrag wordt. Er is nog tijd om dit te stoppen – neem nu contact op.</div>
+          <div class="detail-recht" id="d3-recht">✓ U heeft het recht schuldhulpverlening aan te vragen om verdere kosten te stoppen.</div>
+          <button class="detail-actie amber" id="d3-btn" onclick="window.open('tel:020-2554555')">Bel Schuldhulp Amsterdam: 020 – 255 45 55</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(4)">
+          <div class="fase-dot" style="background:#D85A30"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f4-title">Incasso gestart</div>
+            <div class="fase-mini-tag" id="f4-tag">Een extern bureau int uw schuld</div>
+          </div>
+          <div class="fase-arrow" id="a4">›</div>
+        </div>
+        <div class="detail-panel" id="d4">
+          <div class="detail-title" id="d4-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d4-body">Een extern incassobureau of deurwaarder is ingeschakeld. Dit bedrijf werkt buiten Stadsvriend om en voegt extra kosten toe aan uw schuld. Neem direct contact op om verdere kosten te stoppen.</div>
+          <div class="detail-recht" id="d4-recht">✓ U heeft recht op een volledige specificatie van alle in rekening gebrachte kosten.</div>
+          <button class="detail-actie red" id="d4-btn" onclick="window.open('tel:020-2554555')">Bel Schuldhulp Amsterdam: 020 – 255 45 55</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(5)">
+          <div class="fase-dot" style="background:#A32D2D"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f5-title">Oproep voor de rechter</div>
+            <div class="fase-mini-tag" id="f5-tag">Dagvaarding ontvangen</div>
+          </div>
+          <div class="fase-arrow" id="a5">›</div>
+        </div>
+        <div class="detail-panel" id="d5">
+          <div class="detail-title" id="d5-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d5-body">U bent officieel opgeroepen om voor de rechter te verschijnen. U mag uw verhaal vertellen en uw situatie uitleggen. De rechter weegt uw persoonlijke omstandigheden mee in zijn beslissing. Ga naar de zitting – dit is uw recht.</div>
+          <div class="detail-recht" id="d5-recht">✓ U heeft recht op gratis rechtsbijstand via een sociaal raadsman of toevoeging.</div>
+          <button class="detail-actie red" id="d5-btn" onclick="window.open('tel:020-5550000')">Bel Sociaal Raadslieden: 020 – 555 00 00</button>
+        </div>
+
+        <div class="fase-mini" onclick="toggleFase(6)">
+          <div class="fase-dot" style="background:#501313"></div>
+          <div class="fase-text">
+            <div class="fase-mini-title" id="f6-title">Gedwongen ontruiming</div>
+            <div class="fase-mini-tag" id="f6-tag">Laatste stadium</div>
+          </div>
+          <div class="fase-arrow" id="a6">›</div>
+        </div>
+        <div class="detail-panel" id="d6">
+          <div class="detail-title" id="d6-title">Wat betekent dit?</div>
+          <div class="detail-body" id="d6-body">Dit is het laatste stadium. Een deurwaarder kan uw woning ontruimen. Dit kan worden voorkomen door in een eerder stadium actie te ondernemen. Als u dit leest en nog in een eerdere fase zit – bel nu meteen.</div>
+          <div class="detail-recht" id="d6-recht">✓ Uw woning is beschermd – ontruiming mag alleen na een zorgvuldige juridische procedure (art. 8 EVRM).</div>
+          <button class="detail-actie red" id="d6-btn" onclick="window.open('tel:020-0000000')">Bel nu: 020 – 000 00 00</button>
+        </div>
+      </div>
+
+      <div class="rechten-box">
+        <div class="rechten-box-title" id="rechten-title">Uw rechten als huurder</div>
+        <div class="recht-item"><div class="recht-dot"></div><span id="r1">Betalingsregeling aanvragen – u mag dit altijd vragen (art. 7:212 BW)</span></div>
+        <div class="recht-item"><div class="recht-dot"></div><span id="r2">Gratis schuldhulpverlening via de gemeente (art. 4a Wgs)</span></div>
+        <div class="recht-item"><div class="recht-dot"></div><span id="r3">Verweer voeren bij de rechter – uw situatie telt mee (art. 6 EVRM)</span></div>
+        <div class="recht-item"><div class="recht-dot"></div><span id="r4">Uw woning is beschermd – ontruiming alleen na zorgvuldige procedure (art. 8 EVRM)</span></div>
+        <div class="wetten" id="wetten-tekst">Juridische basis: art. 7:212 BW · art. 6:265 BW · art. 4a Wgs · art. 6 & 8 EVRM</div>
+      </div>
+
+      <div class="contact-strip">
+        <div class="contact-strip-title" id="contact-title">Hulp nodig? Bel direct.</div>
+        <div class="contact-row">
+          <div class="contact-pill">
+            <div class="cn">Stadsvriend</div>
+            <div class="nr">020 – 000 00 00</div>
+            <div class="cn">Ma–vr 9:00–17:00</div>
+          </div>
+          <div class="contact-pill">
+            <div class="cn">Schuldhulp <span class="gratis">GRATIS</span></div>
+            <div class="nr">020 – 255 45 55</div>
+            <div class="cn">Vertrouwelijk</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+const T = {
+  nl: {
+    heroTitle: "U heeft de noodkaart gescand",
+    heroSub: "Hieronder vindt u uitleg per fase, uw rechten en de hulp die beschikbaar is. Tik op een fase voor meer informatie.",
+    labelFases: "Kies uw situatie",
+    contactTitle: "Hulp nodig? Bel direct.",
+    rechtenTitle: "Uw rechten als huurder",
+    r1: "Betalingsregeling aanvragen – u mag dit altijd vragen (art. 7:212 BW)",
+    r2: "Gratis schuldhulpverlening via de gemeente (art. 4a Wgs)",
+    r3: "Verweer voeren bij de rechter – uw situatie telt mee (art. 6 EVRM)",
+    r4: "Uw woning is beschermd – ontruiming alleen na zorgvuldige procedure (art. 8 EVRM)",
+    wetten: "Juridische basis: art. 7:212 BW · art. 6:265 BW · art. 4a Wgs · art. 6 & 8 EVRM",
+    fases: [
+      { title:"1 maand niet betaald", tag:"Eerste herinnering", dt:"Wat betekent dit?", db:"U heeft één maand huur niet betaald. U ontvangt een herinnering van Stadsvriend. Er zijn nog geen juridische gevolgen. Dit is het beste moment om contact op te nemen.", dr:"✓ U heeft het recht om een betalingsregeling aan te vragen.", btn:"Bel Stadsvriend: 020 – 000 00 00", col:"green" },
+      { title:"2 maanden niet betaald", tag:"Gemeente wordt ingelicht", dt:"Wat betekent dit?", db:"Stadsvriend is wettelijk verplicht uw situatie te melden bij de gemeente Amsterdam. De gemeente zal contact met u opnemen om gratis hulp aan te bieden. Neem de telefoon op.", dr:"✓ U heeft het recht op gratis schuldhulpverlening via de gemeente.", btn:"Bel Schuldhulp Amsterdam: 020 – 255 45 55", col:"green" },
+      { title:"Aanmaning ontvangen", tag:"Officiële brief met deadline", dt:"Wat betekent dit?", db:"U heeft een formele aanmaning ontvangen met een uiterste betaaldatum. Als u voor die datum niet betaalt of contact opneemt, kunnen verdere stappen worden gezet. Handel nu – er is nog tijd.", dr:"✓ U heeft het recht om te reageren en een betalingsregeling voor te stellen.", btn:"Bel Stadsvriend: 020 – 000 00 00", col:"amber" },
+      { title:"Officieel in verzuim", tag:"Schuld groeit – extra kosten mogelijk", dt:"Wat betekent dit?", db:"U bent officieel te laat met betalen. Er kunnen nu extra kosten bij uw schuld komen. Hoe langer u wacht, hoe hoger het totaalbedrag wordt. Er is nog tijd om dit te stoppen – neem nu contact op.", dr:"✓ U heeft het recht schuldhulpverlening aan te vragen om verdere kosten te stoppen.", btn:"Bel Schuldhulp Amsterdam: 020 – 255 45 55", col:"amber" },
+      { title:"Incasso gestart", tag:"Een extern bureau int uw schuld", dt:"Wat betekent dit?", db:"Een extern incassobureau of deurwaarder is ingeschakeld. Dit bedrijf werkt buiten Stadsvriend om en voegt extra kosten toe aan uw schuld. Neem direct contact op om verdere kosten te stoppen.", dr:"✓ U heeft recht op een volledige specificatie van alle in rekening gebrachte kosten.", btn:"Bel Schuldhulp Amsterdam: 020 – 255 45 55", col:"red" },
+      { title:"Oproep voor de rechter", tag:"Dagvaarding ontvangen", dt:"Wat betekent dit?", db:"U bent officieel opgeroepen om voor de rechter te verschijnen. U mag uw verhaal vertellen en uw situatie uitleggen. De rechter weegt uw persoonlijke omstandigheden mee in zijn beslissing. Ga naar de zitting – dit is uw recht.", dr:"✓ U heeft recht op gratis rechtsbijstand via een sociaal raadsman of toevoeging.", btn:"Bel Sociaal Raadslieden: 020 – 555 00 00", col:"red" },
+      { title:"Gedwongen ontruiming", tag:"Laatste stadium", dt:"Wat betekent dit?", db:"Dit is het laatste stadium. Een deurwaarder kan uw woning ontruimen. Dit kan worden voorkomen door in een eerder stadium actie te ondernemen. Als u dit leest en nog in een eerdere fase zit – bel nu meteen.", dr:"✓ Uw woning is beschermd – ontruiming mag alleen na een zorgvuldige juridische procedure (art. 8 EVRM).", btn:"Bel nu: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  en: {
+    heroTitle: "You scanned the emergency card",
+    heroSub: "Below you will find an explanation per phase, your rights and the help available. Tap a phase for more information.",
+    labelFases: "Choose your situation",
+    contactTitle: "Need help? Call now.",
+    rechtenTitle: "Your rights as a tenant",
+    r1: "Request a payment plan – you may always ask for this (art. 7:212 BW)",
+    r2: "Free debt assistance via the municipality (art. 4a Wgs)",
+    r3: "Defend yourself in court – your situation matters (art. 6 ECHR)",
+    r4: "Your home is protected – eviction only after a careful procedure (art. 8 ECHR)",
+    wetten: "Legal basis: art. 7:212 BW · art. 6:265 BW · art. 4a Wgs · art. 6 & 8 ECHR",
+    fases: [
+      { title:"1 month overdue", tag:"First reminder", dt:"What does this mean?", db:"You have missed one month's rent. You will receive a reminder from Stadsvriend. There are no legal consequences yet. This is the best time to get in touch.", dr:"✓ You have the right to request a payment plan.", btn:"Call Stadsvriend: 020 – 000 00 00", col:"green" },
+      { title:"2 months overdue", tag:"Municipality is informed", dt:"What does this mean?", db:"Stadsvriend is legally required to report your situation to the municipality of Amsterdam. The municipality will contact you to offer free assistance. Please pick up the phone.", dr:"✓ You have the right to free debt assistance via the municipality.", btn:"Call Debt Help Amsterdam: 020 – 255 45 55", col:"green" },
+      { title:"Formal notice received", tag:"Official letter with deadline", dt:"What does this mean?", db:"You have received a formal notice with a final payment date. If you do not pay or make contact before that date, further steps may follow. Act now – there is still time.", dr:"✓ You have the right to respond and propose a payment arrangement.", btn:"Call Stadsvriend: 020 – 000 00 00", col:"amber" },
+      { title:"Officially in default", tag:"Debt growing – extra costs possible", dt:"What does this mean?", db:"You are now officially late with payment. Extra costs may be added to your debt. The longer you wait, the higher the total amount becomes. There is still time to stop this – contact us now.", dr:"✓ You have the right to request debt assistance to stop further costs.", btn:"Call Debt Help Amsterdam: 020 – 255 45 55", col:"amber" },
+      { title:"Debt collection started", tag:"An external agency is collecting your debt", dt:"What does this mean?", db:"An external collection agency or bailiff has been instructed. This company operates independently of Stadsvriend and adds extra costs to your debt. Contact us immediately to stop further costs.", dr:"✓ You have the right to a full specification of all charges being made.", btn:"Call Debt Help Amsterdam: 020 – 255 45 55", col:"red" },
+      { title:"Summoned to court", tag:"Court summons received", dt:"What does this mean?", db:"You have been officially summoned to appear in court. You may tell your side of the story and explain your situation. The judge takes your personal circumstances into account. Go to the hearing – it is your right.", dr:"✓ You have the right to free legal aid via a social legal counsellor.", btn:"Call Legal Aid: 020 – 555 00 00", col:"red" },
+      { title:"Forced eviction", tag:"Last stage", dt:"What does this mean?", db:"This is the last stage. A bailiff can evict you from your home. This can be prevented by taking action at an earlier stage. If you are reading this and are still in an earlier phase – call now immediately.", dr:"✓ Your home is protected – eviction is only allowed after a careful legal procedure (art. 8 ECHR).", btn:"Call now: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  ar: {
+    heroTitle: "لقد قمت بمسح البطاقة الطارئة",
+    heroSub: "يمكنك أدناه الاطلاع على شرح كل مرحلة وحقوقك والمساعدة المتاحة.",
+    labelFases: "اختر وضعك",
+    contactTitle: "هل تحتاج إلى مساعدة؟ اتصل الآن.",
+    rechtenTitle: "حقوقك كمستأجر",
+    r1: "طلب خطة دفع – يحق لك دائمًا طلب ذلك",
+    r2: "مساعدة مجانية في الديون عبر البلدية",
+    r3: "الدفاع عن نفسك أمام المحكمة – وضعك مهم",
+    r4: "منزلك محمي – الإخلاء فقط بعد إجراء دقيق",
+    wetten: "الأساس القانوني: المادة 7:212 BW · المادة 4a Wgs · المادة 6 و 8 ECHR",
+    fases: [
+      { title:"لم تدفع لمدة شهر واحد", tag:"أول تذكير", dt:"ماذا يعني هذا؟", db:"لقد فاتك دفع إيجار شهر واحد. ستتلقى تذكيرًا. لا توجد عواقب قانونية بعد. هذا هو أفضل وقت للتواصل.", dr:"✓ يحق لك طلب خطة للدفع.", btn:"اتصل: 020 – 000 00 00", col:"green" },
+      { title:"لم تدفع لمدة شهرين", tag:"يتم إبلاغ البلدية", dt:"ماذا يعني هذا؟", db:"يُلزم القانون Stadsvriend بإبلاغ البلدية. ستتصل بك البلدية لتقديم المساعدة المجانية. الرجاء الرد على الهاتف.", dr:"✓ يحق لك الحصول على مساعدة مجانية في الديون.", btn:"اتصل بمساعدة الديون: 020 – 255 45 55", col:"green" },
+      { title:"استلام إشعار رسمي", tag:"رسالة رسمية مع موعد نهائي", dt:"ماذا يعني هذا؟", db:"لقد تلقيت إشعارًا رسميًا. إذا لم تدفع أو تتصل قبل الموعد النهائي فقد تتخذ خطوات أخرى. تصرف الآن.", dr:"✓ يحق لك الرد واقتراح ترتيب للدفع.", btn:"اتصل: 020 – 000 00 00", col:"amber" },
+      { title:"أنت متأخر رسميًا", tag:"الدين يتزايد – تكاليف إضافية ممكنة", dt:"ماذا يعني هذا؟", db:"أنت الآن متأخر رسميًا في الدفع. يمكن إضافة تكاليف إضافية إلى دينك. كلما انتظرت أكثر ارتفع المبلغ الإجمالي. لا يزال هناك وقت لإيقاف هذا.", dr:"✓ يحق لك طلب مساعدة الديون لوقف المزيد من التكاليف.", btn:"اتصل بمساعدة الديون: 020 – 255 45 55", col:"amber" },
+      { title:"بدأ التحصيل", tag:"شركة خارجية تحصل دينك", dt:"ماذا يعني هذا؟", db:"تم توكيل وكالة تحصيل خارجية. يتم إضافة تكاليف إضافية إلى دينك. اتصل فورًا لإيقاف المزيد من التكاليف.", dr:"✓ يحق لك الحصول على مواصفات كاملة لجميع الرسوم.", btn:"اتصل: 020 – 255 45 55", col:"red" },
+      { title:"أُستدعيت للمحكمة", tag:"استلام أمر استدعاء", dt:"ماذا يعني هذا؟", db:"لقد تم استدعاؤك للمثول أمام المحكمة. يمكنك رواية قصتك. يأخذ القاضي ظروفك الشخصية بعين الاعتبار. احضر الجلسة – هذا حقك.", dr:"✓ يحق لك الحصول على مساعدة قانونية مجانية.", btn:"اتصل: 020 – 555 00 00", col:"red" },
+      { title:"إخلاء قسري", tag:"المرحلة الأخيرة", dt:"ماذا يعني هذا؟", db:"هذه هي المرحلة الأخيرة. يمكن للمحضر القضائي إخلاء منزلك. يمكن تجنب ذلك باتخاذ إجراء في مرحلة أبكر. إذا كنت لا تزال في مرحلة سابقة – اتصل الآن فورًا.", dr:"✓ منزلك محمي – الإخلاء مسموح فقط بعد إجراء قانوني دقيق.", btn:"اتصل الآن: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  tr: {
+    heroTitle: "Acil kartı taradınız",
+    heroSub: "Aşağıda her aşamanın açıklamasını, haklarınızı ve mevcut yardımı bulabilirsiniz.",
+    labelFases: "Durumunuzu seçin",
+    contactTitle: "Yardıma mı ihtiyacınız var? Şimdi arayın.",
+    rechtenTitle: "Kiracı olarak haklarınız",
+    r1: "Ödeme planı talep edin – bunu her zaman isteyebilirsiniz",
+    r2: "Belediye aracılığıyla ücretsiz borç yardımı",
+    r3: "Mahkemede kendinizi savunun – durumunuz önemlidir",
+    r4: "Eviniz korunmaktadır – tahliye yalnızca dikkatli bir prosedürden sonra",
+    wetten: "Hukuki dayanak: md. 7:212 BW · md. 4a Wgs · md. 6 & 8 EVRM",
+    fases: [
+      { title:"1 ay ödeme yapılmadı", tag:"İlk hatırlatma", dt:"Bu ne anlama geliyor?", db:"Bir aylık kiranızı ödemedíniz. Bir hatırlatma alacaksınız. Henüz yasal sonuç yok. İletişime geçmek için en iyi zaman budur.", dr:"✓ Ödeme planı talep etme hakkına sahipsiniz.", btn:"Ara: 020 – 000 00 00", col:"green" },
+      { title:"2 ay ödeme yapılmadı", tag:"Belediye bilgilendiriliyor", dt:"Bu ne anlama geliyor?", db:"Stadsvriend durumunuzu Belediyeye bildirmekle yükümlüdür. Belediye size ücretsiz yardım teklif etmek için iletişime geçecektir. Telefonu açın.", dr:"✓ Ücretsiz borç yardımı alma hakkınız vardır.", btn:"Borç Yardımı Ara: 020 – 255 45 55", col:"green" },
+      { title:"Resmi ihtar alındı", tag:"Son tarihli resmi mektup", dt:"Bu ne anlama geliyor?", db:"Son ödeme tarihli resmi bir ihtar aldınız. Bu tarihe kadar ödeme yapmazsanız başka adımlar atılabilir. Şimdi harekete geçin.", dr:"✓ İhtara yanıt verme ve ödeme düzenlemesi önerme hakkına sahipsiniz.", btn:"Ara: 020 – 000 00 00", col:"amber" },
+      { title:"Resmi olarak gecikmiş", tag:"Borç büyüyor – ek masraflar mümkün", dt:"Bu ne anlama geliyor?", db:"Artık resmi olarak gecikmiş durumdasınız. Borcunuza ek masraflar eklenebilir. Ne kadar beklerseniz toplam tutar o kadar artar. Bunu durdurmak için hâlâ zaman var.", dr:"✓ Daha fazla masrafı durdurmak için borç yardımı talep etme hakkınız vardır.", btn:"Borç Yardımı Ara: 020 – 255 45 55", col:"amber" },
+      { title:"Tahsilat başladı", tag:"Harici bir büro borcunuzu tahsil ediyor", dt:"Bu ne anlama geliyor?", db:"Harici bir tahsilat ajansı veya icra memuru görevlendirildi. Borcunuza ek masraflar ekleniyor. Daha fazla masrafı durdurmak için hemen iletişime geçin.", dr:"✓ Talep edilen tüm masrafların tam dökümünü alma hakkınız vardır.", btn:"Ara: 020 – 255 45 55", col:"red" },
+      { title:"Mahkemeye çağrıldınız", tag:"Mahkeme celbi alındı", dt:"Bu ne anlama geliyor?", db:"Mahkemede görünmek üzere resmi olarak çağrıldınız. Hikâyenizi anlatabilirsiniz. Hâkim kişisel koşullarınızı dikkate alır. Duruşmaya gidin – bu sizin hakkınız.", dr:"✓ Sosyal hukuk danışmanı aracılığıyla ücretsiz hukuki yardım hakkınız vardır.", btn:"Ara: 020 – 555 00 00", col:"red" },
+      { title:"Zorla tahliye", tag:"Son aşama", dt:"Bu ne anlama geliyor?", db:"Bu son aşamadır. Bir icra memuru evinizi tahliye edebilir. Daha erken bir aşamada harekete geçilerek bu önlenebilir. Hâlâ önceki bir aşamadaysanız – hemen şimdi arayın.", dr:"✓ Eviniz korunmaktadır – tahliye yalnızca dikkatli bir hukuki prosedürden sonra mümkündür.", btn:"Şimdi Ara: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  fr: {
+    heroTitle: "Vous avez scanné la carte d'urgence",
+    heroSub: "Ci-dessous vous trouverez une explication par phase, vos droits et l'aide disponible.",
+    labelFases: "Choisissez votre situation",
+    contactTitle: "Besoin d'aide ? Appelez maintenant.",
+    rechtenTitle: "Vos droits en tant que locataire",
+    r1: "Demander un plan de paiement – vous pouvez toujours le demander (art. 7:212 BW)",
+    r2: "Aide gratuite pour les dettes via la commune (art. 4a Wgs)",
+    r3: "Vous défendre devant le tribunal – votre situation compte (art. 6 CEDH)",
+    r4: "Votre logement est protégé – expulsion uniquement après une procédure soigneuse (art. 8 CEDH)",
+    wetten: "Base juridique : art. 7:212 BW · art. 6:265 BW · art. 4a Wgs · art. 6 & 8 CEDH",
+    fases: [
+      { title:"1 mois de retard", tag:"Premier rappel", dt:"Qu'est-ce que cela signifie ?", db:"Vous n'avez pas payé un mois de loyer. Vous recevrez un rappel. Il n'y a pas encore de conséquences juridiques. C'est le meilleur moment pour prendre contact.", dr:"✓ Vous avez le droit de demander un plan de paiement.", btn:"Appelez Stadsvriend : 020 – 000 00 00", col:"green" },
+      { title:"2 mois de retard", tag:"La commune est informée", dt:"Qu'est-ce que cela signifie ?", db:"Stadsvriend est légalement obligé de signaler votre situation à la commune. La commune vous contactera pour offrir une aide gratuite. Décrochez le téléphone.", dr:"✓ Vous avez droit à une aide gratuite pour les dettes via la commune.", btn:"Appelez l'Aide aux dettes : 020 – 255 45 55", col:"green" },
+      { title:"Mise en demeure reçue", tag:"Lettre officielle avec délai", dt:"Qu'est-ce que cela signifie ?", db:"Vous avez reçu une mise en demeure officielle avec une date limite. Si vous ne payez pas ou ne prenez pas contact avant cette date, d'autres mesures peuvent suivre. Agissez maintenant.", dr:"✓ Vous avez le droit de répondre et de proposer un arrangement de paiement.", btn:"Appelez Stadsvriend : 020 – 000 00 00", col:"amber" },
+      { title:"En défaut officiel de paiement", tag:"Dette croissante – frais supplémentaires possibles", dt:"Qu'est-ce que cela signifie ?", db:"Vous êtes officiellement en retard de paiement. Des frais supplémentaires peuvent s'ajouter à votre dette. Plus vous attendez, plus le montant total augmente. Il est encore temps d'arrêter cela.", dr:"✓ Vous avez le droit de demander une aide pour les dettes afin de stopper les frais.", btn:"Appelez l'Aide aux dettes : 020 – 255 45 55", col:"amber" },
+      { title:"Recouvrement commencé", tag:"Un bureau externe récupère votre dette", dt:"Qu'est-ce que cela signifie ?", db:"Un bureau de recouvrement externe ou un huissier a été mandaté. Des frais supplémentaires s'ajoutent à votre dette. Contactez-nous immédiatement pour stopper les frais.", dr:"✓ Vous avez droit à un détail complet de tous les frais facturés.", btn:"Appelez l'Aide aux dettes : 020 – 255 45 55", col:"red" },
+      { title:"Convoqué au tribunal", tag:"Citation à comparaître reçue", dt:"Qu'est-ce que cela signifie ?", db:"Vous êtes officiellement convoqué à comparaître devant le tribunal. Vous pouvez exposer votre situation. Le juge tient compte de vos circonstances personnelles. Assistez à l'audience – c'est votre droit.", dr:"✓ Vous avez droit à une aide juridique gratuite via un conseiller juridique social.", btn:"Appelez l'Aide juridique : 020 – 555 00 00", col:"red" },
+      { title:"Expulsion forcée", tag:"Dernier stade", dt:"Qu'est-ce que cela signifie ?", db:"C'est le dernier stade. Un huissier peut vous expulser de votre logement. Cela peut être évité en agissant à un stade antérieur. Si vous êtes encore dans une phase précédente – appelez maintenant.", dr:"✓ Votre logement est protégé – l'expulsion n'est autorisée qu'après une procédure juridique soigneuse (art. 8 CEDH).", btn:"Appelez maintenant : 020 – 000 00 00", col:"red" },
+    ]
+  },
+  de: {
+    heroTitle: "Sie haben die Notkarte gescannt",
+    heroSub: "Unten finden Sie eine Erklärung zu jeder Phase, Ihre Rechte und die verfügbare Hilfe.",
+    labelFases: "Wählen Sie Ihre Situation",
+    contactTitle: "Brauchen Sie Hilfe? Rufen Sie jetzt an.",
+    rechtenTitle: "Ihre Rechte als Mieter",
+    r1: "Zahlungsplan beantragen – Sie können dies jederzeit verlangen (Art. 7:212 BW)",
+    r2: "Kostenlose Schuldenhilfe über die Gemeinde (Art. 4a Wgs)",
+    r3: "Sich vor Gericht verteidigen – Ihre Situation zählt (Art. 6 EMRK)",
+    r4: "Ihre Wohnung ist geschützt – Räumung nur nach sorgfältigem Verfahren (Art. 8 EMRK)",
+    wetten: "Rechtsgrundlage: Art. 7:212 BW · Art. 6:265 BW · Art. 4a Wgs · Art. 6 & 8 EMRK",
+    fases: [
+      { title:"1 Monat nicht bezahlt", tag:"Erste Mahnung", dt:"Was bedeutet das?", db:"Sie haben eine Monatsmiete nicht bezahlt. Sie erhalten eine Erinnerung von Stadsvriend. Es gibt noch keine rechtlichen Folgen. Dies ist der beste Zeitpunkt, Kontakt aufzunehmen.", dr:"✓ Sie haben das Recht, einen Zahlungsplan zu beantragen.", btn:"Stadsvriend anrufen: 020 – 000 00 00", col:"green" },
+      { title:"2 Monate nicht bezahlt", tag:"Gemeinde wird informiert", dt:"Was bedeutet das?", db:"Stadsvriend ist gesetzlich verpflichtet, Ihre Situation der Gemeinde Amsterdam zu melden. Die Gemeinde wird Sie kontaktieren, um kostenlose Hilfe anzubieten. Nehmen Sie das Telefon ab.", dr:"✓ Sie haben Anspruch auf kostenlose Schuldenhilfe über die Gemeinde.", btn:"Schuldenhilfe anrufen: 020 – 255 45 55", col:"green" },
+      { title:"Mahnung erhalten", tag:"Offizieller Brief mit Frist", dt:"Was bedeutet das?", db:"Sie haben eine formelle Mahnung mit einem letzten Zahlungstermin erhalten. Wenn Sie vor diesem Datum nicht zahlen oder Kontakt aufnehmen, können weitere Schritte folgen. Handeln Sie jetzt.", dr:"✓ Sie haben das Recht, auf die Mahnung zu antworten und eine Regelung vorzuschlagen.", btn:"Stadsvriend anrufen: 020 – 000 00 00", col:"amber" },
+      { title:"Offiziell im Verzug", tag:"Schulden wachsen – Mehrkosten möglich", dt:"Was bedeutet das?", db:"Sie sind offiziell mit der Zahlung im Rückstand. Zu Ihrer Schuld können nun Zusatzkosten hinzukommen. Je länger Sie warten, desto höher wird der Gesamtbetrag. Es ist noch Zeit, dies zu stoppen.", dr:"✓ Sie haben das Recht, Schuldenhilfe zu beantragen, um weitere Kosten zu stoppen.", btn:"Schuldenhilfe anrufen: 020 – 255 45 55", col:"amber" },
+      { title:"Inkasso begonnen", tag:"Ein externes Büro treibt Ihre Schulden ein", dt:"Was bedeutet das?", db:"Ein externes Inkassobüro oder Gerichtsvollzieher wurde beauftragt. Zu Ihrer Schuld kommen zusätzliche Kosten hinzu. Kontaktieren Sie uns sofort, um weitere Kosten zu stoppen.", dr:"✓ Sie haben Anspruch auf eine vollständige Aufstellung aller berechneten Kosten.", btn:"Schuldenhilfe anrufen: 020 – 255 45 55", col:"red" },
+      { title:"Vorladung zum Gericht", tag:"Gerichtliche Vorladung erhalten", dt:"Was bedeutet das?", db:"Sie wurden offiziell vor Gericht vorgeladen. Sie dürfen Ihre Seite der Geschichte erzählen. Der Richter berücksichtigt Ihre persönlichen Umstände. Erscheinen Sie bei der Verhandlung – das ist Ihr Recht.", dr:"✓ Sie haben Anspruch auf kostenlose Rechtsberatung über einen Sozialrechtsberater.", btn:"Rechtsberatung anrufen: 020 – 555 00 00", col:"red" },
+      { title:"Zwangsräumung", tag:"Letzte Phase", dt:"Was bedeutet das?", db:"Dies ist die letzte Phase. Ein Gerichtsvollzieher kann Ihre Wohnung räumen. Dies kann verhindert werden, indem in einem früheren Stadium gehandelt wird. Wenn Sie noch in einer früheren Phase sind – rufen Sie jetzt sofort an.", dr:"✓ Ihre Wohnung ist geschützt – Räumung ist nur nach einem sorgfältigen rechtlichen Verfahren zulässig (Art. 8 EMRK).", btn:"Jetzt anrufen: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  es: {
+    heroTitle: "Ha escaneado la tarjeta de emergencia",
+    heroSub: "A continuación encontrará una explicación de cada fase, sus derechos y la ayuda disponible.",
+    labelFases: "Elija su situación",
+    contactTitle: "¿Necesita ayuda? Llame ahora.",
+    rechtenTitle: "Sus derechos como inquilino",
+    r1: "Solicitar un plan de pago – siempre puede pedirlo (art. 7:212 BW)",
+    r2: "Asistencia gratuita para deudas a través del municipio (art. 4a Wgs)",
+    r3: "Defenderse ante el tribunal – su situación importa (art. 6 CEDH)",
+    r4: "Su vivienda está protegida – desalojo solo tras un procedimiento cuidadoso (art. 8 CEDH)",
+    wetten: "Base jurídica: art. 7:212 BW · art. 6:265 BW · art. 4a Wgs · art. 6 y 8 CEDH",
+    fases: [
+      { title:"1 mes sin pagar", tag:"Primer aviso", dt:"¿Qué significa esto?", db:"No ha pagado un mes de alquiler. Recibirá un recordatorio de Stadsvriend. Aún no hay consecuencias legales. Este es el mejor momento para ponerse en contacto.", dr:"✓ Tiene derecho a solicitar un plan de pago.", btn:"Llame a Stadsvriend: 020 – 000 00 00", col:"green" },
+      { title:"2 meses sin pagar", tag:"El municipio es informado", dt:"¿Qué significa esto?", db:"Stadsvriend está legalmente obligado a comunicar su situación al municipio. El municipio le contactará para ofrecer ayuda gratuita. Descuelgue el teléfono.", dr:"✓ Tiene derecho a asistencia gratuita para deudas a través del municipio.", btn:"Llame a Ayuda de Deudas: 020 – 255 45 55", col:"green" },
+      { title:"Aviso formal recibido", tag:"Carta oficial con fecha límite", dt:"¿Qué significa esto?", db:"Ha recibido un aviso formal con una fecha límite de pago. Si no paga o no se pone en contacto antes de esa fecha, podrían seguir más medidas. Actúe ahora – todavía hay tiempo.", dr:"✓ Tiene derecho a responder al aviso y proponer un acuerdo de pago.", btn:"Llame a Stadsvriend: 020 – 000 00 00", col:"amber" },
+      { title:"Oficialmente en mora", tag:"La deuda crece – posibles costes adicionales", dt:"¿Qué significa esto?", db:"Ahora está oficialmente en mora. Pueden añadirse costes adicionales a su deuda. Cuanto más espere, mayor será el importe total. Todavía hay tiempo para detener esto.", dr:"✓ Tiene derecho a solicitar ayuda para deudas y detener los costes adicionales.", btn:"Llame a Ayuda de Deudas: 020 – 255 45 55", col:"amber" },
+      { title:"Cobro iniciado", tag:"Una agencia externa recauda su deuda", dt:"¿Qué significa esto?", db:"Se ha encargado a una agencia de cobros externa o a un alguacil. Se añaden costes adicionales a su deuda. Contáctenos inmediatamente para detener los costes.", dr:"✓ Tiene derecho a un desglose completo de todos los costes facturados.", btn:"Llame a Ayuda de Deudas: 020 – 255 45 55", col:"red" },
+      { title:"Citado ante el tribunal", tag:"Citación judicial recibida", dt:"¿Qué significa esto?", db:"Ha sido citado oficialmente para comparecer ante el tribunal. Puede contar su versión y explicar su situación. El juez tiene en cuenta sus circunstancias personales. Acuda a la vista – es su derecho.", dr:"✓ Tiene derecho a asistencia jurídica gratuita a través de un asesor jurídico social.", btn:"Llame a Asesoría Jurídica: 020 – 555 00 00", col:"red" },
+      { title:"Desalojo forzoso", tag:"Última fase", dt:"¿Qué significa esto?", db:"Esta es la última fase. Un alguacil puede desalojarle de su vivienda. Esto puede evitarse actuando en una fase anterior. Si aún está en una fase anterior – llame ahora mismo.", dr:"✓ Su vivienda está protegida – el desalojo solo está permitido tras un procedimiento jurídico cuidadoso (art. 8 CEDH).", btn:"Llame ahora: 020 – 000 00 00", col:"red" },
+    ]
+  },
+  zh: {
+    heroTitle: "您已扫描紧急卡片",
+    heroSub: "以下是每个阶段的说明、您的权利以及可获得的帮助。点击某个阶段获取更多信息。",
+    labelFases: "选择您的情况",
+    contactTitle: "需要帮助？立即致电。",
+    rechtenTitle: "您作为租户的权利",
+    r1: "申请付款计划 – 您随时可以提出此要求（第7:212条 BW）",
+    r2: "通过市政府获得免费债务援助（第4a条 Wgs）",
+    r3: "在法庭上为自己辩护 – 您的情况很重要（第6条 ECHR）",
+    r4: "您的住所受到保护 – 只有经过谨慎程序后才可驱逐（第8条 ECHR）",
+    wetten: "法律依据：第7:212条 BW · 第6:265条 BW · 第4a条 Wgs · 第6和8条 ECHR",
+    fases: [
+      { title:"拖欠1个月租金", tag:"第一次提醒", dt:"这意味着什么？", db:"您未支付一个月的租金。您将收到提醒通知。目前尚无法律后果。现在是联系我们的最佳时机。", dr:"✓ 您有权申请付款计划。", btn:"致电Stadsvriend：020 – 000 00 00", col:"green" },
+      { title:"拖欠2个月租金", tag:"市政府被告知", dt:"这意味着什么？", db:"Stadsvriend依法必须向阿姆斯特丹市政府报告您的情况。市政府将与您联系，提供免费援助。请接听电话。", dr:"✓ 您有权通过市政府获得免费债务援助。", btn:"致电债务援助：020 – 255 45 55", col:"green" },
+      { title:"收到正式催告函", tag:"带有截止日期的正式信函", dt:"这意味着什么？", db:"您收到了一封带有最终付款日期的正式催告函。如果您在该日期前未付款或联系我们，可能会采取进一步措施。现在行动 – 还有时间。", dr:"✓ 您有权回应催告函并提出付款安排。", btn:"致电Stadsvriend：020 – 000 00 00", col:"amber" },
+      { title:"正式逾期", tag:"债务增加 – 可能产生额外费用", dt:"这意味着什么？", db:"您现在正式逾期付款。您的债务可能会增加额外费用。等待时间越长，总金额就越高。现在仍有时间阻止这种情况。", dr:"✓ 您有权申请债务援助以阻止进一步的费用。", btn:"致电债务援助：020 – 255 45 55", col:"amber" },
+      { title:"已开始催收", tag:"外部机构正在催收您的债务", dt:"这意味着什么？", db:"外部催收机构或法院执达主任已被委托。额外费用将添加到您的债务中。请立即联系我们以阻止进一步的费用。", dr:"✓ 您有权获得所有收费的完整明细。", btn:"致电债务援助：020 – 255 45 55", col:"red" },
+      { title:"被传唤出庭", tag:"收到法院传票", dt:"这意味着什么？", db:"您已被正式传唤出庭。您可以陈述您的情况。法官会考虑您的个人情况。出席听证会 – 这是您的权利。", dr:"✓ 您有权通过社会法律顾问获得免费法律援助。", btn:"致电法律援助：020 – 555 00 00", col:"red" },
+      { title:"强制驱逐", tag:"最后阶段", dt:"这意味着什么？", db:"这是最后阶段。法院执达主任可以驱逐您离开住所。通过在早期阶段采取行动可以防止这种情况。如果您仍处于较早阶段 – 请立即致电。", dr:"✓ 您的住所受到保护 – 只有经过谨慎的法律程序后才允许驱逐（第8条 ECHR）。", btn:"立即致电：020 – 000 00 00", col:"red" },
+    ]
+  }
+};
+
+let openFase = -1;
+
+function setLang(lang, btn) {
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const t = T[lang];
+  document.getElementById('hero-title').textContent = t.heroTitle;
+  document.getElementById('hero-sub').textContent = t.heroSub;
+  document.getElementById('label-fases').textContent = t.labelFases;
+  document.getElementById('contact-title').textContent = t.contactTitle;
+  document.getElementById('rechten-title').textContent = t.rechtenTitle;
+  document.getElementById('r1').textContent = t.r1;
+  document.getElementById('r2').textContent = t.r2;
+  document.getElementById('r3').textContent = t.r3;
+  document.getElementById('r4').textContent = t.r4;
+  document.getElementById('wetten-tekst').textContent = t.wetten;
+  t.fases.forEach(function(f, i) {
+    document.getElementById('f'+i+'-title').textContent = f.title;
+    document.getElementById('f'+i+'-tag').textContent = f.tag;
+    document.getElementById('d'+i+'-title').textContent = f.dt;
+    document.getElementById('d'+i+'-body').textContent = f.db;
+    document.getElementById('d'+i+'-recht').textContent = f.dr;
+    var b = document.getElementById('d'+i+'-btn');
+    b.textContent = f.btn;
+    b.className = 'detail-actie ' + f.col;
+  });
+}
+
+function toggleFase(i) {
+  if (openFase === i) {
+    document.getElementById('d'+i).classList.remove('open');
+    document.getElementById('a'+i).classList.remove('open');
+    openFase = -1;
+  } else {
+    if (openFase >= 0) {
+      document.getElementById('d'+openFase).classList.remove('open');
+      document.getElementById('a'+openFase).classList.remove('open');
+    }
+    document.getElementById('d'+i).classList.add('open');
+    document.getElementById('a'+i).classList.add('open');
+    openFase = i;
+  }
+}
+</script>
+</body>
+</html>
